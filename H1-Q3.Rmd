@@ -1,0 +1,164 @@
+---
+title: "Hypothesis Testing II"
+author: "Arash Hatamirad, ahatamirad@gmail.com"
+date: "9/1/2021"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+knitr::opts_knit$set(root.dir = "C:/Users/Sanaz/Documents/All_MSDA_Projects and Sources/R Ptojects/Algorithm I/HM01/Algorithm-I-HW01")
+
+# Install required packages
+
+#install.packages("MASS")
+#install.packages("fBasics")
+#install.packages("moments")
+#install.packages("dplyr")
+
+
+library(MASS)
+library(fBasics)
+library(moments)
+library(dplyr)
+```
+
+The airquality data will be used for this Exercise. The information about variables in the dataset can be found in R.
+
+## Exercise: Hypothesis Testing  
+
+Perform a hypothesis test -whether Wind in July has a different speed (mph) than Wind in August.    
+
+#### Question (a): 
+- Which test should we perform, and why? See QQ-plot and perform Shapiro-Wilk test for normality check.  
+
+
+#### Answer -:  
+- we must compare "Wind" variable in July with "Wind" variable in August  
+- Since we have "Two-Populations", we have to check normality for both samples.  
+
+```{r}
+
+# Filter the July & August data
+
+wind.july=airquality %>% 
+  filter(airquality$Month==7)
+
+wind.august=airquality %>% 
+  filter(airquality$Month==8)
+
+
+```
+
+##### Visual method (QQ Plot)  
+ 
+
+```{r}
+
+# divide 1X2 
+par(mfrow=c(1,2))
+
+# QQ Plot for wind, July
+qqnorm(wind.july$Wind,main = "QQ Plot for Wind - July",ylab="MPH")
+qqline(wind.july$Wind,col="red")
+
+
+# QQ Plot for wind, August
+qqnorm(wind.august$Wind,main = "QQ Plot for Wind - August",ylab = "MPH")
+qqline(wind.august$Wind,col="red")
+
+
+
+```
+
+##### Quantitave method   
+##### Shapiro-Wilk Test 
+
+- H0: Data follows normal distribution  
+- H1: Data doesn't follow normal distribution  
+
+```{r}
+# shapiro-Wilk Test
+
+#Print P-Value for July
+wind.july$Wind %>% 
+  shapiro.test() %>% 
+  print()
+
+# Print P-Value for August
+wind.august$Wind %>% 
+  shapiro.test() %>% 
+  print()
+
+
+```
+ 
+##### comments: 
+
+According to the QQ-Plot, there are a majority points near the red line and regarding to P-Values:  
+ P-Value > Significant Value  
+therefore, we don't have enough evidence to reject the "Null Hypothesis", hence both data follow normal distribution.  
+
+
+##### Conclusion: 
+Both data follow normal distribution, therefore we should perform "T-Test".  
+
+
+#### Question (b): 
+- Specify null and alternative hypotheses
+
+
+#### Answer -:  
+
+- Null Hypothesis (H0):  
+ - Mean of wind in July = Mean of wind in August, it means Wind in July has similar speed (mph) as Wind in August.  
+
+- Alternate Hypothesis (H1):  
+ - Mean of wind in July != Mean of wind in August, it means Wind in July has different speed (mph) with Wind in August.  
+
+
+#### Question (c): 
+- State the conclusion based on the test result.  
+
+
+#### Answer -: 
+1- We must check the variances for both data is equal or not.  
+
+- H0 : Two groups have the same variances  
+- H1 : Two groups have different variances  
+
+```{r}
+# Make a Union data frame, incluse July and August data
+wind.july.august=union(wind.july,wind.august)
+
+# Check the Variances
+var.test(wind.july.august$Wind ~ wind.july.august$Month, alternative="two.sided")
+
+```
+
+##### comments: 
+
+According to the P-Value, because it's very bigger than significant value, thus we don't have enough evidence to reject H0    
+
+- Two groups have the same variances, hence  we will run Pooled T-Test  
+
+```{r}
+# Run pooled T-Test
+
+t.test(wind.july.august$Wind ~ wind.july.august$Month,alternative="two.sided",var.equal=TRUE)
+
+
+```
+
+#### Conclusion: 
+- P-Value >> significant value  
+P-Value is very bigger then significant value,therefor we don't have enough evidence to reject H0   
+
+- result: Mean of wind in July = Mean of wind in August, it means Wind in July has similar speed (mph) as Wind in August.    
+
+
+***

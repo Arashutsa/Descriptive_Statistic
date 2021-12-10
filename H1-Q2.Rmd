@@ -1,0 +1,123 @@
+---
+title: "Hypothesis Testing I"
+author: "Arash Hatamirad, ahatamirad@gmail.com"
+date: "9/1/2021"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+knitr::opts_knit$set(root.dir = "C:/Users/Sanaz/Documents/All_MSDA_Projects and Sources/R Ptojects/Algorithm I/HM01/Algorithm-I-HW01")
+
+# Install required packages
+
+#install.packages("MASS")
+#install.packages("fBasics")
+#install.packages("moments")
+#install.packages("dplyr")
+
+
+library(MASS)
+library(fBasics)
+library(moments)
+library(dplyr)
+```
+
+Cars.csv will be used for Exercise. The variables in the data are included below in the table. The variables in the data set are the following attributes of cars in the year 2004: 
+
+	Make –  the auto manufacturer  
+	Model – name of the vehicle   
+	Type – SUV, sedan, sports, truck, or wagon  
+	Origin – continent of the manufacturer; Europe, Asia, or USA  
+	Invoice – price (dollars) that the manufacturer sends to the dealer upon delivery of the car  
+	Horsepower – amount of the car’s power  
+	MPG_City – miles per gallon (fuel efficiency) during city driving  
+	MPG_Highway – miles per gallon during highway driving  
+	Wheelbase – distance (inches) between the centers of the front and rear wheels  
+	Length – distance (inches) from the nose to the tail of the car  
+
+
+## Exercise: Hypothesis Testing  
+
+
+Perform a hypothesis test of whether SUV has different horsepower than Truck, and state your conclusions
+
+
+```{r}
+# Read the CSV file
+file.cars=read.csv("CARS.csv") 
+```
+
+```{r}
+# Make new MPG_Combo variable
+MPG_Combo <- 0.6*file.cars$MPG_City +0.4*file.cars$MPG_Highway
+
+#Add MPG_Combo variable to the end of tabale
+file.cars.mpg_combo <- cbind(file.cars,MPG_Combo)
+
+
+
+#Draw Box plot for the MPG_Combo variable and trim box plot
+boxplot(file.cars.mpg_combo$MPG_Combo,main="Combined MPG (60% in City and 40% in Highway)",xlab="Combo",ylab="MPG",col = "aquamarine3",border ="aquamarine4")
+
+#Point the mean value with a blue asterisk sign
+points(mean(file.cars.mpg_combo$MPG_Combo,na.rm = TRUE),col="blue",pch=8)
+
+```
+
+  
+#### Question (a): 
+- Which test should we perform, and why? Justify your answer based on findings on Exercise 1 (d).  
+ 
+
+#### Answer -:  
+Based on Exercise 1(d), SUV and Truck have not a normal distribution.    
+Because we have a two Populations, and both does not have normal distribution, we should perform a "Non Parametric" test which is "Wilcoxon Rank-Sum Test".  
+
+
+#### Question (b): 
+- Specify null and alternative hypotheses.  
+ 
+
+#### Answer -:  
+
+
+- Null Hypothesis (H0): 
+ - Two groups are from the same distribution (same median) it means SUV cars have similar horsepower as Truck Cars.  
+ 
+- Alternate Hypothesis (H1):  
+ - One groups tends to have larger median value then the other group, it means SUV cars have different horsepower with Truck Cars.
+
+
+#### Question (c): 
+- State the conclusion based on the test result    
+ 
+
+#### Answer -: 
+
+```{r}
+# Filter SUV and Truck cars
+cars.suv.truck <- file.cars %>% 
+  filter(Type == "SUV" | Type == "Truck")
+
+# Run the wilcox Test
+wilcox.test(Horsepower ~ Type, data=cars.suv.truck, exact=FALSE)
+
+
+```
+
+##### Conclusion:  
+
+P-Value >> Significant Value (0.05)  
+
+P-Value is very bigger then significant value, hence    
+We don't have enough evidence to reject the H0 (null hypothesis), thus our conclusion is two groups are from the same distribution (same median) it means SUV cars have similar horsepower as Truck Cars.    
+
+
+
+*** 
+
